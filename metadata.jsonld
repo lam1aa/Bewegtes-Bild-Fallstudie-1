@@ -237,7 +237,7 @@
         },
         {
           "@type": "AlignmentObject",
-          "targetName": "Filmanalytische Grundparameter können identifiziert und korrekt kategorisiert werden.",
+          "targetName": "Filmanalytische Grundparameter (Einstellungsgrößen, Kamerabewegungen, Montage) können identifiziert und korrekt kategorisiert werden.",
           "educationalFramework": "QUADRIGA Competency Framework",
           "targetDescription": "Competency: 2.1 Erhebung | Bloom's: 3 Anwenden | Data Flow: 2 Erhebung und Aufbereitung"
         },

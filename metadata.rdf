@@ -23,7 +23,7 @@
   <schema:AlignmentObject rdf:about="https://quadriga-dk.github.io/Bewegtes-Bild-Fallstudie-1/#chapter_1_objective_2">
     <schema:educationalFramework>QUADRIGA Competency Framework</schema:educationalFramework>
     <schema:targetDescription>Competency: 2.1 Erhebung | Bloom's: 3 Anwenden | Data Flow: 2 Erhebung und Aufbereitung</schema:targetDescription>
-    <schema:targetName>Filmanalytische Grundparameter können identifiziert und korrekt kategorisiert werden.</schema:targetName>
+    <schema:targetName>Filmanalytische Grundparameter (Einstellungsgrößen, Kamerabewegungen, Montage) können identifiziert und korrekt kategorisiert werden.</schema:targetName>
   </schema:AlignmentObject>
   <schema:AlignmentObject rdf:about="https://quadriga-dk.github.io/Bewegtes-Bild-Fallstudie-1/#chapter_1_objective_3">
     <schema:educationalFramework>QUADRIGA Competency Framework</schema:educationalFramework>
