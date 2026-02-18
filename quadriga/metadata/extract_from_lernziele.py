@@ -57,7 +57,7 @@ def parse_metadata_comment(comment: str) -> dict[str, str]:
 
 def validate_objective_metadata(
     objective_data: dict[str, Any]
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], list[str]]:
     """
     Validate and fill in missing metadata for a learning objective.
     
@@ -65,7 +65,7 @@ def validate_objective_metadata(
         objective_data: Objective data dictionary
     
     Returns:
-        dict: Validated and completed objective data
+        tuple: (validated objective data, list of missing fields)
     """
     missing_fields = []
     
@@ -86,15 +86,13 @@ def validate_objective_metadata(
 
 
 def extract_admonition_blocks(
-    content: str, 
-    strict: bool = False
+    content: str
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Extract all admonition blocks with learning objectives from Markdown content.
     
     Args:
         content: Markdown file content
-        strict: If True, fail on missing metadata; if False, use defaults
     
     Returns:
         tuple: (extracted blocks, validation issues)
@@ -123,19 +121,26 @@ def extract_admonition_blocks(
         section_ref = title_match.group(2)
         section_note = title_match.group(4) if title_match.group(4) else None
         
-        # Parse options
+        # Look for START marker with chapter name in the body
+        # Format: <!-- START: ChapterName -->
         chapter = None
-        for line in options_block.split('\n'):
-            if line.startswith(':chapter:'):
-                chapter = line.split(':', 2)[2].strip()
+        start_marker_match = re.search(r'<!--\s*START:\s*(.+?)\s*-->', body)
         
-        # Extract objectives from body
+        if start_marker_match:
+            # Extract chapter name directly from START marker
+            chapter = start_marker_match.group(1).strip()
+            
+            # Remove START and END markers from body for processing
+            body_cleaned = re.sub(r'<!--\s*START:\s*.+?\s*-->\s*', '', body)
+            body_cleaned = re.sub(r'\s*<!--\s*END:\s*.+?\s*-->', '', body_cleaned)
+        
+        # Extract objectives from cleaned body
         objectives = []
         
         # Pattern: numbered list item followed by optional metadata comment
         objective_pattern = r'(\d+)\.\s+(.+?)(?:\n\s*<!--\s*(.+?)\s*-->)?(?=\n\d+\.|\n\n|$)'
         
-        obj_matches = re.finditer(objective_pattern, body, re.DOTALL)
+        obj_matches = re.finditer(objective_pattern, body_cleaned, re.DOTALL)
         
         for obj_match in obj_matches:
             objective_text = obj_match.group(2).strip()
@@ -178,30 +183,29 @@ def extract_admonition_blocks(
             else:
                 logger.warning(
                     "No chapter specified for section '%s'. "
-                    "Add ':chapter: <ChapterName>' to the admonition options.",
+                    "Add '<!-- START: ChapterName -->' at the beginning of the objectives.",
                     section_title
                 )
             
             blocks.append(block_data)
             logger.info(
-                "Extracted section '%s' with %d objectives",
+                "Extracted section '%s' with %d objectives (chapter: %s)",
                 section_title,
-                len(objectives)
+                len(objectives),
+                chapter or "unknown"
             )
     
     return blocks, validation_issues
 
 
 def extract_from_lernziele_file(
-    md_file_path: Path,
-    strict: bool = False
+    md_file_path: Path
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Extract learning objectives from a Lernziele.md file.
     
     Args:
         md_file_path: Path to Lernziele.md
-        strict: If True, fail on missing metadata
     
     Returns:
         tuple: (extracted sections, validation issues)
@@ -210,7 +214,7 @@ def extract_from_lernziele_file(
         with md_file_path.open(encoding="utf-8") as f:
             content = f.read()
         
-        blocks, issues = extract_admonition_blocks(content, strict=strict)
+        blocks, issues = extract_admonition_blocks(content)
         
         logger.info(
             "Extracted %d admonition blocks from %s",
@@ -323,14 +327,18 @@ def merge_learning_objectives_into_metadata() -> bool:
             all_validation_issues.extend(issues)
         
         # Generate validation report
+        report_path = repo_root / "learning-objectives-validation.txt"
+        
         if all_validation_issues:
-            report_path = repo_root / "learning-objectives-validation.txt"
-            report = generate_validation_report(all_validation_issues, report_path)
-
+            generate_validation_report(all_validation_issues, report_path)
+            logger.warning(
+                "Found %d objectives with missing metadata. "
+                "See learning-objectives-validation.txt for details.",
+                len(all_validation_issues)
+            )
         else:
             logger.info("✅ All learning objectives have complete metadata")
             # DELETE the old validation report if it exists
-            report_path = repo_root / "learning-objectives-validation.txt"
             if report_path.exists():
                 report_path.unlink()
                 logger.info("Removed old validation report (no issues found)")
@@ -364,10 +372,6 @@ def merge_learning_objectives_into_metadata() -> bool:
                 if chapter_title in chapter_objectives:
                     objectives = chapter_objectives[chapter_title]
                     chapter["learning-objectives"] = objectives
-                    logger.info(
-                        "Added %d learning objectives to chapter '%s'",
-                        chapter_title
-                    )
         
         if save_yaml_file(metadata_path, metadata):
             logger.info("Successfully merged learning objectives into metadata.yml")

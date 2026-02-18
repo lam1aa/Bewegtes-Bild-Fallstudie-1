@@ -16,8 +16,8 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 ```{admonition} [Erhebung filmanalytischer Daten zu audiovisuellem Material anhand tabellarischer Annotation](tabellarische:annotation) (*optional*)
 :class: lernziele, dropdown
-:chapter: Tabellarische Annotation (optional)
 
+<!-- START: Tabellarische Annotation (optional) -->
 1. Die methodischen Grundlagen der tabellarischen Annotation können definiert und ihre Bedeutung für die filmanalytische Datenerhebung erläutert werden.
 <!-- competency: Orientierungswissen | blooms: 1 Erinnern | data-flow: übergreifend -->
 
@@ -29,12 +29,13 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 4. Die Grenzen und Möglichkeiten tabellarischer Annotation für affektrhetorische Analysen können reflektiert werden.
 <!-- competency: 1.2 Qualitätssicherung | blooms: 3 Anwenden | data-flow: 1 Planung -->
+<!-- END: Tabellarische Annotation (optional) -->
 ```
 
 ```{admonition} [Erhebung filmanalytischer Daten anhand Freitextannotationen mit digitalen Tools](annotation:tools) (*optional*)
 :class: lernziele, dropdown
-:chapter: Annotieren mit Tools (optional)
 
+<!-- START: Annotieren mit Tools (optional) -->
 1. Die zentralen Funktionen der Annotationstools Advene und ELAN können verstanden und für filmanalytische Zwecke angewendet werden.
 <!-- competency: 3.2 Erschließung | blooms: 3 Anwenden | data-flow: 3 Management -->
 
@@ -46,12 +47,13 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 4. Die Unterschiede in der Datenqualität zwischen manueller tabellarischer und toolbasierter Annotation können analysiert und bewertet werden.
 <!-- competency: 4.1 Datenanalyse | blooms: 4 Analysieren | data-flow: 4 Analyse -->
+<!-- END: Annotieren mit Tools (optional) -->
 ```
 
 ```{admonition} [Überführung filmanalytischer Konzepte in semantische Triple nach Ontologiestruktur](einarbeiten:ontologie)
 :class: lernziele, dropdown
-:chapter: Einarbeiten in die Filmontologie
 
+<!-- START: Einarbeiten in die Filmontologie -->
 1. Die Grundprinzipien des Semantic Web können definiert und ihre Relevanz für filmwissenschaftliche Datenmodelle erläutert werden.
 <!-- competency: Orientierungswissen | blooms: 2 Verstehen | data-flow: übergreifend -->
 
@@ -63,12 +65,13 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 4. Die Notwendigkeit eines einheitlichen Datenframeworks für vergleichende Filmanalysen kann argumentativ begründet werden.
 <!-- competency: 3.2 Erschließung | blooms: 5 Bewerten | data-flow: 3 Management -->
+<!-- END: Einarbeiten in die Filmontologie -->
 ```
 
 ```{admonition} [Erhebung filmanalytischer Daten durch digitale Annotation mit einer Filmontologie](annotieren:ontologie)
 :class: lernziele, dropdown
-:chapter: Annotieren mit einer Filmontologie
 
+<!-- START: Annotieren mit einer Filmontologie -->
 1. Die Struktur der AdA-Filmontologie kann beschrieben und ihre methodischen Grundlagen erläutert werden.
 <!-- competency: Orientierungswissen | blooms: 2 Verstehen | data-flow: übergreifend -->
 
@@ -83,12 +86,13 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 5. Die Anpassungsmöglichkeiten der AdA-Filmontologie können für eigene Forschungskontexte evaluiert werden.
 <!-- competency: 2.2 Validierung | blooms: 5 Bewerten | data-flow: 2 Erhebung und Aufbereitung -->
+<!-- END: Annotieren mit einer Filmontologie -->
 ```
 
 ```{admonition} [Syntaxbasierte Datenvisualisierung -,exploration und -interpretation](visualisierung:daten)
 :class: lernziele, dropdown
-:chapter: Datenvisualisierung
 
+<!-- START: Datenvisualisierung -->
 1. Die Funktionsweise der AdA-Timeline kann beschrieben und ihre Bedeutung für die filmanalytische Datenexploration erläutert werden.
 <!-- competency: Orientierungswissen | blooms: 2 Verstehen | data-flow: übergreifend -->
 
@@ -103,12 +107,13 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 5. Visualisierte Daten können für wissenschaftliche Präsentationen und Publikationen aufbereitet werden.
 <!-- competency: 2.3 Aufbereitung | blooms: 6 Erschaffen | data-flow: 2 Erhebung und Aufbereitung -->
+<!-- END: Datenvisualisierung -->
 ```
 
 ```{admonition} [Zusammenfassung und Reflexion der Entwicklung von tabellarischer Annotation zur strukturierten Ontologie](reflexion:resümee)
 :class: lernziele, dropdown
-:chapter: Reflexion und Resümee
 
+<!-- START: Reflexion und Resümee -->
 1. Der Übergang von tabellarischer Annotation zur Ontologie kann rekapituliert werden.
 <!-- competency: Orientierungswissen | blooms: 1 Erinnern | data-flow: übergreifend -->
 
@@ -117,4 +122,5 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 
 3. Die Rolle quantitativer Datenproduktion als Hilfsmittel qualitativer Empirie kann eingeordnet und kritisch hinterfragt werden.
 <!-- competency: 2.2 Validierung | blooms: 5 Bewerten | data-flow: 2 Erhebung und Aufbereitung -->
+<!-- END: Reflexion und Resümee -->
 ```
