@@ -160,7 +160,7 @@ chapters:
       begründen werden.
     competency: 3.2 Erschließung
     blooms-category: 4 Analysieren
-    data-flow: 2 Erhebung und Aufbereitung
+    data-flow: 3 Management
   - learning-objective: Die Unterschiede in der Datenqualität zwischen manueller tabellarischer
       und toolbasierter Annotation können analysiert und bewertet werden.
     competency: 4.1 Datenanalyse
@@ -271,9 +271,9 @@ chapters:
   description: Zusammenfassung und kritische Reflexion des methodischen Übergangs
     von tabellarischer Annotation zur ontologiebasierten Filmanalyse sowie Einordnung
     quantitativer Datenproduktion als Hilfsmittel qualitativer Empirie.
+  time-required: PT30M
   learning-goal: Die Entwicklung von tabellarischer Annotation zur ontologiebasierten
     Annotation kann zusammengefassst und die Methoden kritisch reflektiert werden.
-  time-required: PT30M
   learning-objectives:
   - learning-objective: Der Übergang von tabellarischer Annotation zur Ontologie kann
       rekapituliert werden.
