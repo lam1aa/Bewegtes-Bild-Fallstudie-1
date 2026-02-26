@@ -26,7 +26,7 @@ def parse_metadata_comment(comment: str) -> dict[str, str]:
     """
     Parse metadata from HTML comment.
     
-    Format: <!-- competency: X | blooms: Y | data-flow: Z -->
+    Format: <!-- competency: X | blooms: Y -->
     
     Args:
         comment: HTML comment string
@@ -39,60 +39,54 @@ def parse_metadata_comment(comment: str) -> dict[str, str]:
     # Remove HTML comment markers
     content = re.sub(r'<!--\s*|\s*-->', '', comment)
     
-    # Split by pipe
-    parts = content.split('|')
-    
-    for part in parts:
+    for part in content.split('|'):
         part = part.strip()
-        if ':' in part:
-            key, value = part.split(':', 1)
-            key = key.strip().lower().replace(' ', '-')
-            value = value.strip()
-            
-            # Map keys to expected format
-            if key == 'blooms':
-                metadata['blooms-category'] = value
-            elif key == 'competency':
-                metadata['competency'] = value
-            elif key == 'data-flow':
-                metadata['data-flow'] = value
+        if ':' not in part:
+            continue
+        key, value = part.split(':', 1)
+        key = key.strip().lower().replace(' ', '-')
+        value = value.strip()
+        if not value:
+            continue
+        # Map 'blooms' key to the expected 'blooms-category' field name
+        if key == 'blooms':
+            metadata['blooms-category'] = value
+        elif key == 'competency':
+            metadata[key] = value
     
     return metadata
 
 
-def validate_objective_metadata(
-    objective_data: dict[str, Any]
-) -> tuple[dict[str, Any], list[str]]:
+def validate_objective_metadata(objective_data: dict[str, Any]) -> list[str]:
     """
-    Validate and fill in missing metadata for a learning objective.
+    Validate and fill in missing metadata for a learning objective (in place).
     
     Args:
-        objective_data: Objective data dictionary
+        objective_data: Objective data dictionary (mutated in place)
     
     Returns:
-        tuple: (validated objective data, list of missing fields)
+        list[str]: Names of fields that were missing and filled with defaults
     """
     missing_fields = []
     
-    # Check required fields
-    if 'competency' not in objective_data or not objective_data['competency']:
+    if not objective_data.get('competency'):
         missing_fields.append('competency')
         objective_data['competency'] = DEFAULT_COMPETENCY
     
-    if 'blooms-category' not in objective_data or not objective_data['blooms-category']:
+    if not objective_data.get('blooms-category'):
         missing_fields.append('blooms-category')
         objective_data['blooms-category'] = DEFAULT_BLOOMS
     
-    if 'data-flow' not in objective_data or not objective_data['data-flow']:
+    if not objective_data.get('data-flow'):
         objective_data['data-flow'] = derive_data_flow(
             objective_data.get('competency', DEFAULT_COMPETENCY)
         )
     
-    return objective_data, missing_fields
+    return missing_fields
 
 
 def derive_data_flow(competency: str) -> str:
-    """Derive data-flow from competency according to QUADRIGA rules."""
+    """Derive data-flow from competency."""
     competency_normalized = normalize_whitespace(competency)
 
     if competency_normalized == "Orientierungswissen":
@@ -138,7 +132,6 @@ def extract_admonition_blocks(
     
     for match in matches:
         title_line = match.group(1).strip()
-        options_block = match.group(2).strip()
         body = match.group(3).strip()
         
         # Parse title - extract text and reference
@@ -163,59 +156,29 @@ def extract_admonition_blocks(
         if learning_goal_match:
             learning_goal = normalize_whitespace(learning_goal_match.group(1))
         
-        # Look for START marker with chapter name in the body
-        # Format: <!-- START: ChapterName -->
+        # Extract chapter name from the outermost START marker
         chapter = None
-        body_cleaned = body
         start_marker_match = re.search(r'<!--\s*START:\s*(.+?)\s*-->', body)
-        
         if start_marker_match:
-            # Extract chapter name directly from START marker
             chapter = start_marker_match.group(1).strip()
-            
-            # Remove START and END markers from body for processing
-            body_cleaned = re.sub(r'<!--\s*START:\s*.+?\s*-->\s*', '', body)
-            body_cleaned = re.sub(r'\s*<!--\s*END:\s*.+?\s*-->', '', body_cleaned)
-        
-        # Extract objectives from cleaned body
+
+        # Strip all START/END markers so both wrapped and bare formats parse identically
+        body_cleaned = re.sub(r'<!--\s*START:\s*.+?\s*-->\s*', '', body)
+        body_cleaned = re.sub(r'\s*<!--\s*END:\s*.+?\s*-->', '', body_cleaned)
+
+        # Parse numbered objectives with optional inline metadata comment
         objectives = []
+        objective_pattern = r'\d+\.\s+(.+?)(?:\n\s*<!--\s*(.+?)\s*-->)?(?=\n\d+\.|\n\n|$)'
 
-        # New structure support: objective wrapped in START/END block
-        # <!-- START: E1 -->
-        # 1. ...
-        # <!-- competency: ... | blooms: ... | data-flow: ... -->
-        # <!-- END: E1 -->
-        objective_block_pattern = (
-            r'<!--\s*START:\s*(.+?)\s*-->\s*'
-            r'\d+\.\s+(.+?)'
-            r'(?:\n\s*<!--\s*(.+?)\s*-->)?\s*'
-            r'<!--\s*END:\s*\1\s*-->'
-        )
+        for obj_match in re.finditer(objective_pattern, body_cleaned, re.DOTALL):
+            objective_text = normalize_whitespace(obj_match.group(1))
+            metadata_comment = obj_match.group(2)
 
-        obj_matches = list(re.finditer(objective_block_pattern, body, re.DOTALL))
-
-        # Parse objective-wrapper format, but skip chapter wrapper block
-        for obj_match in obj_matches:
-            block_id = normalize_whitespace(obj_match.group(1))
-            if chapter and block_id == chapter:
-                continue
-
-            objective_text = normalize_whitespace(obj_match.group(2))
-            metadata_comment = obj_match.group(3)
-
-            objective_data = {
-                'learning-objective': objective_text
-            }
-
-            # Parse metadata if present
+            objective_data = {'learning-objective': objective_text}
             if metadata_comment:
-                metadata = parse_metadata_comment(metadata_comment)
-                objective_data.update(metadata)
+                objective_data.update(parse_metadata_comment(metadata_comment))
 
-            # Validate and fill in missing metadata
-            objective_data, missing_fields = validate_objective_metadata(objective_data)
-
-            # Track validation issues
+            missing_fields = validate_objective_metadata(objective_data)
             if missing_fields:
                 validation_issues.append({
                     'section': section_title,
@@ -224,37 +187,6 @@ def extract_admonition_blocks(
                 })
 
             objectives.append(objective_data)
-
-        # Backward compatibility for the previous objective format
-        if not objectives:
-            objective_pattern = r'(\d+)\.\s+(.+?)(?:\n\s*<!--\s*(.+?)\s*-->)?(?=\n\d+\.|\n\n|$)'
-            legacy_matches = list(re.finditer(objective_pattern, body_cleaned, re.DOTALL))
-
-            for obj_match in legacy_matches:
-                objective_text = normalize_whitespace(obj_match.group(2))
-                metadata_comment = obj_match.group(3)
-            
-                objective_data = {
-                    'learning-objective': objective_text
-                }
-
-                # Parse metadata if present
-                if metadata_comment:
-                    metadata = parse_metadata_comment(metadata_comment)
-                    objective_data.update(metadata)
-
-                # Validate and fill in missing metadata
-                objective_data, missing_fields = validate_objective_metadata(objective_data)
-
-                # Track validation issues
-                if missing_fields:
-                    validation_issues.append({
-                        'section': section_title,
-                        'objective': objective_text[:60],
-                        'missing_fields': missing_fields
-                    })
-
-                objectives.append(objective_data)
         
         if objectives:
             block_data = {
@@ -330,39 +262,6 @@ def extract_from_lernziele_file(
         return [], []
 
 
-def find_lernziele_files(repo_root: Path) -> list[Path]:
-    """
-    Find all Lernziele.md files in the repository.
-    
-    Args:
-        repo_root: Repository root path
-    
-    Returns:
-        list[Path]: List of Lernziele.md file paths
-    """
-    patterns = ["**/[Ll]ernziel*.md", "**/*learning*objective*.md"]
-    files = []
-    
-    excluded_parts = {"_build", "_jupyter_execute", "_sources", "__pycache__"}
-
-    for pattern in patterns:
-        found = list(repo_root.glob(pattern))
-        # Exclude generated files and templates
-        found = [
-            f for f in found
-            if not f.name.startswith('_')
-            and f.suffix != '.j2'
-            and not any(part in excluded_parts for part in f.parts)
-        ]
-        files.extend(found)
-    
-    # Remove duplicates
-    files = list(set(files))
-    
-    logger.info("Found %d Lernziele files", len(files))
-    return files
-
-
 def generate_validation_report(
     validation_issues: list[dict[str, Any]],
     output_path: Path | None = None
@@ -400,101 +299,98 @@ def generate_validation_report(
 
 def merge_learning_objectives_into_metadata() -> bool:
     """
-    Extract learning objectives from Markdown files and merge into metadata.yml.
-    
+    Extract learning objectives from Lernziele.md and merge into metadata.yml.
+
     Returns:
         bool: True if successful
     """
     try:
         repo_root = get_repo_root()
-        
-        # Find all Lernziele.md files
-        lernziele_files = find_lernziele_files(repo_root)
-        
-        if not lernziele_files:
-            logger.warning("No Lernziele files found")
+
+        # Find the single Lernziele.md file
+        excluded_parts = {"_build", "_jupyter_execute", "_sources", "__pycache__"}
+
+        def is_valid(f: Path) -> bool:
+            return (
+                not f.name.startswith('_')
+                and f.suffix != '.j2'
+                and not any(part in excluded_parts for part in f.parts)
+            )
+
+        patterns = ["**/[Ll]ernziel*.md", "**/*learning*objective*.md"]
+        md_file = next(
+            (f for pattern in patterns for f in repo_root.glob(pattern) if is_valid(f)),
+            None,
+        )
+
+        if md_file is None:
+            logger.warning("No Lernziele file found")
             return True
-        
-        # Extract all learning objectives
-        all_sections = []
-        all_validation_issues = []
-        
-        for md_file in lernziele_files:
-            sections, issues = extract_from_lernziele_file(md_file)
-            all_sections.extend(sections)
-            all_validation_issues.extend(issues)
-        
-        # Generate validation report
+
+        sections, validation_issues = extract_from_lernziele_file(md_file)
+
+        # Handle validation report
         report_path = repo_root / "learning-objectives-validation.txt"
-        
-        if all_validation_issues:
-            generate_validation_report(all_validation_issues, report_path)
+        if validation_issues:
+            generate_validation_report(validation_issues, report_path)
             logger.warning(
                 "Found %d objectives with missing metadata. "
                 "See learning-objectives-validation.txt for details.",
-                len(all_validation_issues)
+                len(validation_issues),
             )
         else:
             logger.info("✅ All learning objectives have complete metadata")
-            # DELETE the old validation report if it exists
             if report_path.exists():
                 report_path.unlink()
                 logger.info("Removed old validation report (no issues found)")
-    
-        if not all_sections:
+
+        if not sections:
             logger.warning("No learning objectives extracted")
             return True
-        
+
         # Load existing metadata.yml
         metadata_path = get_file_path("metadata.yml", repo_root)
         metadata = load_yaml_file(metadata_path)
-        
+
         if not metadata or not isinstance(metadata, dict):
             logger.error("Could not load metadata.yml")
             return False
-        
-        # Build mappings by chapter name
-        chapter_objectives = {}
-        chapter_learning_goals = {}
-        for section in all_sections:
+
+        # Build chapter → objectives/learning-goal mappings
+        chapter_objectives: dict[str, list] = {}
+        chapter_learning_goals: dict[str, str] = {}
+        for section in sections:
             chapter = section.get('chapter')
-            if chapter:
-                if chapter not in chapter_objectives:
-                    chapter_objectives[chapter] = []
-                chapter_objectives[chapter].extend(section['objectives'])
+            if not chapter:
+                continue
+            chapter_objectives.setdefault(chapter, []).extend(section['objectives'])
+            learning_goal = section.get('learning-goal')
+            if learning_goal:
+                if chapter in chapter_learning_goals and chapter_learning_goals[chapter] != learning_goal:
+                    logger.warning(
+                        "Multiple learning goals found for chapter '%s'. Using first one.",
+                        chapter,
+                    )
+                else:
+                    chapter_learning_goals[chapter] = learning_goal
 
-                learning_goal = section.get('learning-goal')
-                if learning_goal:
-                    existing_learning_goal = chapter_learning_goals.get(chapter)
-                    if existing_learning_goal and existing_learning_goal != learning_goal:
-                        logger.warning(
-                            "Multiple learning goals found for chapter '%s'. Using first one.",
-                            chapter,
-                        )
-                    else:
-                        chapter_learning_goals[chapter] = learning_goal
-        
         # Merge into metadata chapters
-        if "chapters" in metadata:
-            for chapter in metadata["chapters"]:
-                chapter_title = chapter.get("title", "")
+        for chapter in metadata.get("chapters", []):
+            if not isinstance(chapter, dict):
+                continue
+            chapter_title = chapter.get("title", "")
+            if chapter_title not in chapter_objectives:
+                continue
+            chapter["learning-goal"] = chapter_learning_goals.get(chapter_title, "TODO")
+            chapter["learning-objectives"] = chapter_objectives[chapter_title]
 
-                if chapter_title in chapter_objectives:
-                    if chapter_title in chapter_learning_goals:
-                        chapter["learning-goal"] = chapter_learning_goals[chapter_title]
-                    else:
-                        chapter["learning-goal"] = "TODO"
-
-                    objectives = chapter_objectives[chapter_title]
-                    chapter["learning-objectives"] = objectives
-        
         if save_yaml_file(metadata_path, metadata):
             logger.info("Successfully merged learning objectives into metadata.yml")
             return True
         else:
             logger.error("Failed to save updated metadata.yml")
             return False
-        
+
     except Exception:
         logger.exception("Error merging learning objectives")
         return False

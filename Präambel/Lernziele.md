@@ -29,17 +29,25 @@ Nach erfolgreichem Durchlaufen dieses JupyterNotebooks können im Erfolgsfall di
 <!-- learning-goal: Filmanalytische Daten zu audiovisuellem Material können systematisch
     anhand tabellarischer Annotation erhoben und ausgewertet werden. -->
 
+<!-- START: TA1 -->
 1. Die methodischen Grundlagen der tabellarischen Annotation können definiert und ihre Bedeutung für die filmanalytische Datenerhebung erläutert werden.
 <!-- competency: Orientierungswissen | blooms: 1 Erinnern  -->
+<!-- END: TA1 -->
 
+<!-- START: TA2 -->
 2. Zeitbasierte Metadaten zu filmischem Bewegtbildmaterial können systematisch in tabellarischer Form erfasst und die Unterschiede zwischen den Segmentierungsformen in der Anwendung begründet werden.
 <!-- competency: 2.1 Erhebung | blooms: 3 Anwenden -->
+<!-- END: TA2 -->
 
+<!-- START: TA3 -->
 3. Filmanalytische Grundparameter (Einstellungsgrößen, Kamerabewegungen, Montage) können identifiziert und korrekt kategorisiert werden.
 <!-- competency: 2.1 Erhebung | blooms: 3 Anwenden -->
+<!-- END: TA3 -->
 
+<!-- START: TA4 -->
 4. Die Grenzen und Möglichkeiten tabellarischer Annotation für affektrhetorische Analysen können reflektiert werden.
 <!-- competency: 1.2 Qualitätssicherung | blooms: 3 Anwenden -->
+<!-- END: TA4 -->
 
 <!-- END: Tabellarische Annotation (optional) -->
 ```
