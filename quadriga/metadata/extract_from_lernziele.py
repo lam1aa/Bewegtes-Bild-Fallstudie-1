@@ -145,9 +145,8 @@ def extract_admonition_blocks(
         section_ref = title_match.group(2)
         section_note = title_match.group(4) if title_match.group(4) else None
 
-        # Extract optional learning goal from HTML comment
+        # Extract optional learning goal; fall back to the admonition title
         # Format: <!-- learning-goal: ... -->
-        learning_goal = None
         learning_goal_match = re.search(
             r'<!--\s*learning-goal:\s*(.+?)\s*-->',
             body,
@@ -155,7 +154,9 @@ def extract_admonition_blocks(
         )
         if learning_goal_match:
             learning_goal = normalize_whitespace(learning_goal_match.group(1))
-        
+        else:
+            learning_goal = section_title
+
         # Extract chapter name from the outermost START marker
         chapter = None
         start_marker_match = re.search(r'<!--\s*START:\s*(.+?)\s*-->', body)
@@ -192,11 +193,9 @@ def extract_admonition_blocks(
             block_data = {
                 'section-title': section_title,
                 'section-reference': section_ref,
+                'learning-goal': learning_goal,
                 'objectives': objectives
             }
-
-            if learning_goal:
-                block_data['learning-goal'] = learning_goal
             
             if section_note:
                 block_data['section-note'] = section_note
